@@ -564,18 +564,12 @@ void MainMenu::showPrepare()
       break;
     case ItemP_preheat_pla:
 		MENUITEM(  LCD_PRINT_PGM(MSG_PREHEAT_PLA)  ,  LCD_BLOCK;setTargetHotend0(plaPreheatHotendTemp);setTargetBed(plaPreheatHPBTemp);
-      #if FAN_PIN > -1
-		fanSpeed = plaPreheatFanSpeed;
-        analogWrite(FAN_PIN,  fanSpeed);
-      #endif
+      fanSpeed = plaPreheatFanSpeed;
       beepshort(); );
       break;
     case ItemP_preheat_abs:
       MENUITEM(  LCD_PRINT_PGM(MSG_PREHEAT_ABS)  ,  LCD_BLOCK;setTargetHotend0(absPreheatHotendTemp);setTargetBed(absPreheatHPBTemp); 
-      #if FAN_PIN > -1
-	  	fanSpeed = absPreheatFanSpeed;
-        analogWrite(FAN_PIN,  fanSpeed);
-      #endif
+      fanSpeed = absPreheatFanSpeed;
       beepshort(); );
       break;
     case ItemP_cooldown:
@@ -917,8 +911,7 @@ void MainMenu::showTune()
         {
           if(encoderpos<0) encoderpos=0;
           if(encoderpos>255) encoderpos=255;
-          fanSpeed=encoderpos;
-            analogWrite(FAN_PIN,  fanSpeed);
+          fanSpeed = encoderpos;
           lcd.setCursor(13,line);lcd.print(itostr3(encoderpos));
         }
         
@@ -1320,7 +1313,6 @@ void MainMenu::showControlTemp()
           if(encoderpos<0) encoderpos=0;
           if(encoderpos>255) encoderpos=255;
           fanSpeed=encoderpos;
-            analogWrite(FAN_PIN,  fanSpeed);
           lcd.setCursor(13,line);lcd.print(itostr3(encoderpos));
         }
         

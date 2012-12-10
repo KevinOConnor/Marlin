@@ -314,6 +314,7 @@ void setup()
   MYSERIAL.begin(BAUDRATE);
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START;
+  analogWrite(6,155);
 
   // Check startup - does nothing if bootloader sets MCUSR to 0
   byte mcu = MCUSR;
@@ -1134,6 +1135,13 @@ void process_commands()
         fanSpeed = 0;
         break;
     #endif //FAN_PIN
+
+     case 108: //M108 Extruder fan speed
+        if (code_seen('S')){
+            analogWrite(6,code_value());
+           //FanSpeed1=constrain(code_value(),0,255);
+        }
+        break;
 
     #if (PS_ON_PIN > -1)
       case 80: // M80 - ATX Power On

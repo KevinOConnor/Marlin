@@ -432,6 +432,8 @@ void getHighESpeed()
 }
 #endif
 
+static unsigned long FanKickEnd;
+
 void check_axes_activity()
 {
   unsigned char x_active = 0;
@@ -465,6 +467,19 @@ void check_axes_activity()
     disable_e2(); 
   }
 #if FAN_PIN > -1
+  #ifdef FAN_KICK
+  if (tail_fan_speed) {
+    if (FanKickEnd == 0) {
+      // Just starting up fan - run at full power.
+      FanKickEnd = millis() + FAN_KICK;
+      tail_fan_speed = 255;
+    } else if (FanKickEnd > millis())
+      // Fan still spinning up.
+      tail_fan_speed = 255;
+  } else {
+    FanKickEnd = 0;
+  }
+  #endif
   analogWrite(FAN_PIN,tail_fan_speed);
 #endif
 #ifdef AUTOTEMP

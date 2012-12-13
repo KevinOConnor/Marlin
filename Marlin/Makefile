@@ -273,8 +273,10 @@ endif
 CFLAGS := $(CDEBUG) $(CDEFS) $(CINCS) -O$(OPT) $(CWARN) $(CEXTRA) $(CTUNING)
 CXXFLAGS :=         $(CDEFS) $(CINCS) -O$(OPT) -Wall    $(CEXTRA) $(CTUNING)
 #ASFLAGS = -Wa,-adhlns=$(<:.S=.lst),-gstabs
-LDFLAGS = -lm
+LDFLAGS := -lm
 
+# Check for a working LD with --relax support
+LDFLAGS += $(shell if test -z "`$(CC) -Wl,-relax -ffunction-sections -mmcu=atmega128 test-relax.c -o /dev/null 2>&1`" ; then echo "-Wl,-relax"; else echo ""; fi ;)
 
 # Programming support using avrdude. Settings and variables.
 AVRDUDE_PORT = $(UPLOAD_PORT)

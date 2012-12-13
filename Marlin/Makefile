@@ -240,6 +240,10 @@ AVRDUDE = avrdude
 REMOVE = rm -f
 MV = mv -f
 
+# Tool for testing compiler flags
+cc-option=$(shell if test -z "`$(1) $(2) -S -o /dev/null -xc /dev/null 2>&1`" \
+    ; then echo "$(2)"; else echo "$(3)"; fi ;)
+
 # Place -D or -U options here
 CDEFS    = -DF_CPU=$(F_CPU) ${addprefix -D , $(DEFINES)}
 CXXDEFS  = $(CDEFS)
@@ -270,8 +274,10 @@ CTUNING += -DMOTHERBOARD=${HARDWARE_MOTHERBOARD}
 endif
 #CEXTRA = -Wa,-adhlns=$(<:.c=.lst)
 
-CFLAGS := $(CDEBUG) $(CDEFS) $(CINCS) -O$(OPT) $(CWARN) $(CEXTRA) $(CTUNING)
-CXXFLAGS :=         $(CDEFS) $(CINCS) -O$(OPT) -Wall    $(CEXTRA) $(CTUNING)
+CFLAGS := $(CDEBUG) $(CDEFS) $(CINCS) -O$(OPT) $(CWARN) $(CEXTRA) $(CTUNING) \
+    $(call cc-option,$(CC),-flto -fwhole-program,)
+CXXFLAGS :=         $(CDEFS) $(CINCS) -O$(OPT) -Wall    $(CEXTRA) $(CTUNING) \
+    $(call cc-option,$(CC),-flto -fwhole-program,)
 #ASFLAGS = -Wa,-adhlns=$(<:.S=.lst),-gstabs
 LDFLAGS := -lm
 
@@ -381,9 +387,13 @@ extcoff: $(TARGET).elf
 	$(NM) -n $< > $@
 
 	# Link: create ELF output file from library.
-$(BUILD_DIR)/$(TARGET).elf: $(OBJ) Configuration.h
+$(BUILD_DIR)/$(TARGET).elf: $(BUILD_DIR)/$(TARGET).o
 	$(Pecho) "  CXX   $@"
-	$P $(CC) $(ALL_CXXFLAGS) -Wl,--gc-sections -o $@ -L. $(OBJ) $(LDFLAGS)
+	$P $(CC) $(ALL_CXXFLAGS) -Wl,--gc-sections -o $@ -L. $^ $(LDFLAGS)
+
+$(BUILD_DIR)/$(TARGET).o: $(OBJ) Configuration.h
+	$(Pecho) "  CXX   $@"
+	$P $(CC) $(ALL_CXXFLAGS) -nostdlib -Wl,--unique="*" -Wl,-r -o $@ $(OBJ)
 
 $(BUILD_DIR)/%.o: %.c Configuration.h Configuration_adv.h $(MAKEFILE)
 	$(Pecho) "  CC    $<"
